@@ -98,5 +98,12 @@ function animation() {
   
   window.requestAnimationFrame(animation);
 }
+body {
+  background: #060e1b;
+  overflow: hidden;
+}
 
+canvas {
+  //opacity: 0.5;
+}
 animation();
