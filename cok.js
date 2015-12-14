@@ -1,37 +1,43 @@
-initPixi(0x336699);
-
-var prevBox = new PIXI.Graphics();
-var box = new PIXI.Graphics();
-stage.addChild(prevBox);
-stage.addChild(box);
-animate();
-var x  = 0;
-var y = 0;
-
-var fps = 4;
-var frame = 0;
-function animate() {
-  requestAnimationFrame(animate);
-  frame++;
-  if (frame%fps == 0) {
-    if (frame/fps > 250) {
-      prevBox.clear();
-      var temp = prevBox;
-      prevBox = box;
-      box = temp;
-      frame = 0;
-      stage.addChild(prevBox);
-      stage.addChild(box);
-    }
-    box.lineStyle(30 - 0.1 * frame/fps, Math.random() * 0xFFFFFF);
-    box.moveTo(-50, Math.random() * sH);
-    var px1 = -100 + Math.random()*(sW + 200);
-    var py1 = Math.random() * (sH * 2)  - sH/2;
-    var px2 = -100 + Math.random()*(sW + 200);
-    var py2 = Math.random() * (sH * 2)  - sH/2;
-    box.bezierCurveTo(px1, py1, px2, py2, sW + 50, Math.random() * sH)
-    box.endFill();
-  }
-  // render the container
-  renderer.render(stage);
-}
+! function(canvas, Math) {
+	"use strict";
+	var spans = [],
+		num = 12;
+	var run = function() {
+		requestAnimationFrame(run);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		for (var i = 0; i < num; i++) {
+			var span = spans[i],
+				x = (canvas.width / num) * i,
+				w = (canvas.width - num) / num;
+			span.y += span.acc;
+			if (pointer.hasMoved > 0 && pointer.x >= x && pointer.x <= x + w && span.y > pointer.y) {
+				span.acc = -50;
+				span.d = 255;
+			}
+			if (span.y > canvas.height) {
+				span.beep && span.acc > 2 && span.beep.play();
+				span.acc = -Math.abs(span.acc * 0.8);
+				span.y = canvas.height;
+			}
+			if (span.y < 0) span.acc = 1;
+			span.acc += 1;
+			ctx.fillStyle = "rgb(" + span.d + "," + (span.d || Math.round(span.y * 255 / canvas.height)) + "," + span.d + ")";
+			span.d = 0;
+			ctx.fillRect(x, 0, w, span.y);
+		}
+		pointer.hasMoved--;
+	}
+	var ctx = canvas.init();
+	var pointer = canvas.pointer();
+	pointer.move = pointer.down = function() {
+		this.hasMoved = 3;
+	}
+	pointer.hasMoved = 0;
+	for (var i = 0; i < num; i++) spans[i] = {
+		y: -i * 5,
+		acc: 1,
+		d: 0,
+		beep: window.location.href.indexOf("fullcpgrid") > -1 ? false : window.Audio ? new Audio("https://s3-us-west-2.amazonaws.com/s.cdpn.io/222599/pong" + (Math.floor(Math.random() * 3) + 1) + ".mp3") : false
+	};
+	run();
+}(canvas, Math);
